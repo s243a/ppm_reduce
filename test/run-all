@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Clean up old diffs
+stat *.diff &> /dev/null && ls -1 *.diff | xargs rm
+
+GREEN="\e[0;32m"
+RED="\e[0;31m"
+END="\e[0m"
+
+BASE=$(pwd)
+TESTS=$(ls -d */)
+FAILED=0
+cd ..
+
+printf "%s\n\n" "Running all tests"
+
+for TEST in $TESTS; do
+    DIR=$BASE/$TEST
+    SETUP=$(<$DIR/setup)
+    printf "  * running test ${TEST%/}: "
+    ./bash-reduce $SETUP $DIR/input > $DIR/result 2> /dev/null
+    diff $DIR/result $DIR/expected > /dev/null
+    if [[ $? -eq 0 ]]; then
+        printf "${GREEN}passed${END}!\n"
+    else
+        diff $DIR/result $DIR/expected > "$BASE/${TEST%/}.diff"
+        printf "${RED}failed${END}\n"
+        FAILED=$((FAILED+1))
+    fi
+    rm $DIR/result
+done
+
+if [[ $FAILED -eq 0 ]]; then
+    printf "\nAll tests ${GREEN}PASSED${END}!\n"
+else
+    printf "\n$FAILED test(s) ${RED}FAILED${END}! read diff file for more info.\n"
+fi

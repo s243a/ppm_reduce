@@ -1,0 +1,19 @@
+BEGIN {
+  if length(lb_sep==0){
+    lb_sep="@@@@"
+  }
+  if length(lb_sep==0){
+    field_sep="\\|"
+  }  
+  #if length(group_key==0){
+  #  group_key=1
+  #}  
+}
+{
+  split($0, lines , lb_sep)
+  for (line_key in lines){
+    split(lines[line_key], fields , lb_sep)
+  }
+  printf '%i %i' $key $0
+  printf '%s' lb_sep
+}
