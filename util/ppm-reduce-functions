@@ -1,0 +1,70 @@
+set -x
+RP_FN="`which realpath`"
+RP_TARGET=$(readlink $RP_FN)
+function 1st_or_2nd(){
+	if [ ${#1} -gt 0 ]; then
+	  CMD="$1"; shift 1
+	  "$CMD" $2 "$1" 
+	else
+	  CMD="$2"; shift 2
+	  "$CMD" $1 	
+	fi
+}
+function realpath(){
+    CWD="$($RP_FN .)"
+    P_CWD="$($RP_FN ..)"
+    case "$RP_TARGET" in
+    *busybox*)
+      if [ "$1" = -m ]; then
+        shift
+        A_PATH=$1
+        A_PATH=$(echo "$A_PATH" | sed -r 's#^\.\./#'"$P_CWD/"'#g' ) #&& A_PATH=$(dirname $A_PATH)        
+        A_PATH=$(echo "$A_PATH" | sed -r 's#^\./#'"$CWD/"'#g' )
+
+        echo "Warning simulating '-m' option since xzit isn't supported by busybox" >2
+        echo "A_PATH=$A_PATH" >2
+        if [ -f  "$A_PATH" ] || [ -d  "$A_PATH" ]; then
+          $RP_FN "$@"
+        else
+          echo "$A_PATH"
+        fi
+      else
+        $RP_FN "$@"
+      fi
+      ;;
+    *)
+      $RP_FN "$@"
+      ;;
+    esac 
+}
+export -f realpath
+export lcat_path="$(find "$(realpath ..)" -name "lazy_cat.sh")"
+function lcat(){
+	$lcat_path "$@"
+}
+export lcat
+#function realpath(){
+  #  case "$RP_TARGET" in
+ #   *busybox*)
+ #     if [ "$1" = -m ]; then
+ #       shift
+#        A_PATH=$1
+#        A_PATH=$(echo "$A_path" | sed 's#^./#'"$CWD"'#g' )
+#        A_PATH=$(echo "$A_path" | sed 's#^../#'"$CWD"'#g' ) && A_PATH=$(dirname $A_PATH)
+#        echo "Warning simulating '-m' option since xzit isn't supported by busybox" >2
+#        echo "A_PATH=$A_PATH" >2
+#        if [ -f  "$A_PATH" ] || [ -d  "$A_PATH" ]; then
+#          $RP_FN "$@"
+#        else
+#          echo "$A_PATH"
+#        fi
+#     else
+#        $RP_FN "$@"
+#      fi
+#      ;;
+#    *)
+#      $RP_FN "$@"
+#      ;;
+#    esac 
+#}
+#export -f realpath

@@ -34,23 +34,23 @@ BEGIN {
             arch=gensub(/^(.+_.+_)(.+)([.]deb)$/,"\\2","g",$4)
             if ( length(arch) == 0 ){
               switch (fields[4]){
-              case /[_-.]i686[_-.]/:
+              case /[_\-.]i686[_\-.]/:
                  #arch="i686"; break
-              case /[_-.]i586[_-.]/:
+              case /[_\-.]i586[_\-.]/:
                  #arch="i586"; break
-              case /[_-.]i486[_-.]/:
+              case /[_\-.]i486[_\-.]/:
                  #arch="i486"; break                                               
-              case /[_-.]i386[_-.]/:
+              case /[_\-.]i386[_\-.]/:
                  arch="i386"; break
-               case /[_-.]x86_64[_-.]/:
+               case /[_\-.]x86_64[_\-.]/:
                  #arch="x86_64"; break                
-              case /[_-.]amd64[_-.]/:
+              case /[_\-.]amd64[_\-.]/:
                  arch="amd64"; break
-              case /[_-.]amd64[_-.]/:
+              case /[_\-.]amd64[_\-.]/:
                  arch="amd64"; break
-              case /[_-.] armhf[_-.]/:
+              case /[_\-.] armhf[_\-.]/:
                  arch="armhf"; break 
-              case /[_-.]armel[_-.]/:
+              case /[_\-.]armel[_\-.]/:
                  arch="armel"; break
               default:
                 arch=""; break 

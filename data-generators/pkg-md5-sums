@@ -1,36 +1,19 @@
 #!/bin/bash
-
-directories=( "/var/packages/" "/var/packages/builtin_files" "/var/lib/dpkg" )
-outfile=../data-generators/pkg_md5_sums
 CWD="$PWD"
+PPPR_ROOT="$CWD/.."
+outfile=../data-generators/pkg_md5_sums
+directories=( "/var/packages/" "/var/packages/builtin_files" "/var/lib/dpkg" )
 
-RP_FN="`which realpath`"
-function realpath(){
-    case "$RP_TARGET" in
-    *busybox*)
-      if [ "$1" = -m ]; then
-        shift
-        A_PATH=$1
-        A_PATH=$(echo "$A_path" | sed 's#^./#'"$CWD"'#g' )
-        A_PATH=$(echo "$A_path" | sed 's#^../#'"$CWD"'#g' ) && A_PATH=$(dirname $A_PATH)
-        echo "Warning simulating '-m' option since xzit isn't supported by busybox" >2
-        echo "A_PATH=$A_PATH" >2
-        if [ -f  "$A_PATH" ] || [ -d  "$A_PATH" ]; then
-          $RP_FN "$@"
-        else
-          echo "$A_PATH"
-        fi
-      else
-        $RP_FN "$@"
-      fi
-      ;;
-    *)
-      $RP_FN "$@"
-      ;;
-    esac 
-}
-export -f realpath
+source ../util/ppm-reduce-functions
+
 outfile=$(realpath -m "$outfile")
+CWD=$(realpath "$CWD")
+PPPR_ROOT="$(realpath "$PPPR_ROOT")"
+
+    set +x
+    echo "Finished Setting Paths"
+    read -p "Press enter to continue"
+    set -x
 
 AWK_fn_map_deb='
 /^Package:/     { sub(/^Package: /,"");  PKG=$0; }
@@ -74,16 +57,23 @@ for a_dir in "${directories[@]}"; do
       awk -v ext=files -v db_dir=packages "$AWK_fn_prepend_file_list" | sort -t '|' -k1 >> "$outfile"_"$pfx"_db #f1=file_list_name, f2=pkg, f3=version, f4=pkg_file, f5=packages
 
 AWK_FN_pkgs='{
-  filelist=$1; pkg=$2; ver=$3; pkgfile=$4; arch=""; info_dir_alias=$6; md5sum=$7
-  print pkg "|" arch "|" ver "|" pkgfile "|" dir_name "|" filelist "|" md5sum
+  filelist=$1; pkg=$2; ver=$3; pkgfile=$4; arch=""; info_dir_alias=$6; md5sum=$7; md5sum=""
+  print filelist "|" md5sum "|" dir_name "|" pkg "|" arch "|" ver "|" pkgfile "|" md5sum
 }'  
     #join -t "|" -j1 "$outfile"_"$pfx"_db "$outfile"_"$pfx"_md5 | sort -t '|' -k1 >> "$outfile"_$pfx
-    ./bash-reduce -v shuffle_OFS="@@@@" -v shuffle_FS="|" -v Keep_Key=true \
-        ./dpkg_mappers/identity.awk ./dpkg_reducers/PKGS_reducer.awk \
-        <(cat "${outfile}"_"$pfx"_md5 $outfile"_"$pfx"_db")
+    #set +x
+    "$PPPR_ROOT"/bash-reduce -v shuffle_OFS="@@@@" -v shuffle_FS="|" -v Keep_Key=true \
+        "$PPPR_ROOT"/dpkg_mappers/identity.awk "$PPPR_ROOT"/dpkg_reducers/PKGS_reducer.awk \
+        <(cat "${outfile}"_"$pfx"_md5 $outfile"_"$pfx"_db") > "$outfile"_${pfx}
     #cat "$outfile"_$pfx | awk "$AWK_FN_pkgs" > "$outfile"_${pfx}_awk
-    
-    
+    #set +x
+    #echo "Finished:
+    #"$PPPR_ROOT"/bash-reduce -v shuffle_OFS="@@@@" -v shuffle_FS="|" -v Keep_Key=true \
+        #"$PPPR_ROOT"/dpkg_mappers/identity.awk "$PPPR_ROOT"/dpkg_reducers/PKGS_reducer.awk \
+        #<(cat "${outfile}"_"$pfx"_md5 $outfile"_"$pfx"_db") > "$outfile"_${pfx}
+     #"    
+    #read -p "Press enter to continue"
+    #set -x
     
     #set +x
     #read -p "Press enter to continue"
@@ -151,7 +141,7 @@ AWK_FN_pkgs='{
   esac
 done #
 #cd $CWD
-cat cat "${outfile}"_1_db "$outfile"_2_dpkg "$outfile"_3_dpkg "${outfile}"_"$pfx"_db  | sort -t '|' -k1 > "${outfile}"_data
+cat cat "${outfile}"_1 "$outfile"_2 "$outfile"_3 "${outfile}"_"$pfx"_db  | sort -t '|' -k1 > "${outfile}"_data
 
 #cd $CWD/..
 #./bash-reduce ./dpkg_mappers/LB_Mapper ./dpkg_reducers/LB_reducer "${outfile}"_data >> "${outfile}"_$pfx

@@ -12,9 +12,10 @@ BEGIN {
       OFS = "|"
     }
   pkg=""; arch=""; ver=""; pkgfile=""; f5=dir_name=""; f6=filelist=""; md5sum=""
- #pkg "|" arch "|" ver "|" pkgfile "|" dir_name "|" filelist "|" md5sum
+ 
 }
 {
+  #filelist "|" md5sum "|" dir_name "|" pkg "|" arch "|" ver "|" pkgfile
   #split($0, lines , FS)
   for(i=1; i<=NF; i++){
     line=$i
@@ -27,24 +28,24 @@ BEGIN {
           if ( length(fields[4]) != 0 ){
             arch=gensub(/^(.+_.+_)(.+)([.]deb)$/,"\\2","g",$4)
             if ( length(arch) == 0 ){
-              switch (fields[4]){
-              case /[_-.]i686[_-.]/:
+              switch (fields[7]){
+              case /[_\-.]i686[_\-.]/:
                  #arch="i686"; break
-              case /[_-.]i586[_-.]/:
+              case /[_\-.]i586[_\-.]/:
                  #arch="i586"; break
-              case /[_-.]i486[_-.]/:
+              case /[_\-.]i486[_\-.]/:
                  #arch="i486"; break                                               
-              case /[_-.]i386[_-.]/:
+              case /[_\-.]i386[_\-.]/:
                  arch="i386"; break
-               case /[_-.]x86_64[_-.]/:
+               case /[_\-.]x86_64[_\-.]/:
                  #arch="x86_64"; break                
-              case /[_-.]amd64[_-.]/:
+              case /[_\-.]amd64[_\-.]/:
                  arch="amd64"; break
-              case /[_-.]amd64[_-.]/:
+              case /[_\-.]amd64[_\-.]/:
                  arch="amd64"; break
-              case /[_-.] armhf[_-.]/:
+              case /[_\-.] armhf[_\-.]/:
                  arch="armhf"; break 
-              case /[_-.]armel[_-.]/:
+              case /[_\-.]armel[_\-.]/:
                  arch="armel"; break
               default:
                 arch=""; break 
@@ -52,26 +53,26 @@ BEGIN {
             }
           }
         } else {
-          arch=fields[2]
+          arch=fields[5]
           sub(/$[:]/, "",arch)       
         }
       }
       if (length(pkgfile) == 0){
-        pkgfile=fields[4]
+        pkgfile=fields[7]
       }
     }
        
     if ( length(pkg) == 0 ){
-      pkg=fields[1]
+      pkg=fields[4]
     }
     if ( length(ver) == 0 ){
-      ver=fields[3]
+      ver=fields[6]
     }
     if ( length(dir_name) == 0 ){
-      dir_name=fields[5]
+      dir_name=fields[3]
     }      
     if ( length(filelist) == 0 ){
-      filelist=fields[6]
+      filelist=fields[1]
     }   
     if ( length(md5sum) == 0 ){
       md5sum=fields[7]

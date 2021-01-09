@@ -1,0 +1,2 @@
+Usage: bash-reduce [-m mode] [-v var=val] [-p params] mapper reducer input
+Try 'bash-reduce -h' for more information.

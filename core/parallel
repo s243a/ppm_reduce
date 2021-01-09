@@ -1,7 +1,7 @@
 function execute() {
-    parallel --gnu --pipe $3 "awk $2 '$map' | sort -S 1G | awk '$shuffle'" < $1 | \
+    parallel --gnu --pipe $3 "$MAPPER_INTERPRETER'$map' | sort -S 1G | awk '$shuffle'" < $1 | \
     sort -S 1G -k1 | \
     awk $2 "$shuffle" | \
-    parallel --gnu --pipe $3 "awk $2 '$reduce'" | \
+    parallel --gnu --pipe $3 "$REDUCER_INTERPRETER'$reduce'" | \
     sort -S 1G -k1
 }

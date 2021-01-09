@@ -1,7 +1,7 @@
 function execute() {
-    awk $2 "$map" < $1 | \
+    1st_or_2nd "$MAPPER_INTERPRETER" "$map" "$MAPPER_ARGS" < $1  | \
     sort -t '|' -k1 | \
-    awk $2 "$shuffle" | \
-    awk $2 "$reduce" | \
+    1st_or_2nd "$SHUFFLE_INTERPRETER" "$shuffle" "$SHUFFLE_ARGS" | \
+    1st_or_2nd "$REDUCER_INTERPRETER" "$reduce" "$REDUCER_ARGS" | \
     sort -t '|' -k1 
 }

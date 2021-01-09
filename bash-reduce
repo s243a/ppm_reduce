@@ -6,8 +6,11 @@
 # The framework will take care of the rest
 #
 # @author anton.sorhus@gmail.com
-
+set -x
+cd "$(dirname "$0")"
 USAGE="Usage: bash-reduce [-m mode] [-v var=val] [-p params] mapper reducer input"
+source ./util/ppm-reduce-functions
+
 
 function usage() {
     printf "%s\n%s\n" "$USAGE" "Try 'bash-reduce -h' for more information."
@@ -71,11 +74,97 @@ for p in $1 $2 $3; do
     stat $p &> /dev/null || die "Can't read $p"
 done
 
-map=$(<$1)
-shuffle=$(<"core/shuffle.awk")
-reduce=$(<$2)
-input=mktemp pipe_XXXXXXXX
-cat $3 > input &
-#input=$3
+if [ ! -x "$1" ]; then #TODO: Allow for $1 to contain both a command and args. 
+   map="$(<$1)"
+   if [ -z "$MAPPER_INTERPRETER" ]; then   
+     #if [ -z "$awk_variables" ]; then
+      # MAPPER_INTERPRETER="awk"
+     #else
+     #  MAPPER_INTERPRETER="awk $awk_variables"
+     #fi
+     [ -z "$MAP_ARGS"] && [ ${#awk_variables} -gt 0 ] &&  MAPPER_ARGS="${awk_variables}"
+   fi
+   MAPPER_INTERPRETER="$(echo "$MAPPER_INTERPRETER" | sed -r 's#^(.*[^[:blank:]]+)([[:blank:]]*)$#\1 #g')"
+   
+else
+  #This might be problematic with remote machines.
+  map=$1
+  map="$(realpath "$map")"  
+  unset MAPPER_INTERPRETER
+  [ -z "$MAP_ARGS"] && [ ${#awk_variables} -gt 0 ] && [[ $map = *.awk ]] && MAP_ARGS="${awk_variables}"
+fi
 
-execute "$input" "$awk_variables" "$parallel_flags"
+shuffle="$(realpath "core/shuffle.awk")"
+if [ ! -x "$shuffle" ]; then
+  shuffle="$(<$shuffle)"
+   if [ -z "$SHUFFLE_INTERPRETER" ]; then
+   #  if [ -z "$awk_variables" ]; then
+       SHUFFLE_INTERPRETER="awk"
+   #  else
+    #   SHUFFLE_INTERPRETER="awk $awk_variables"
+    # fi
+    [ -z "$SHUFFLE_ARGS"] && [ ${#awk_variables} -gt 0 ] && SHUFFLE_ARGS="${awk_variables}"
+   fi
+   SHUFFLE_INTERPRETER="$(echo "$MAPPER_INTERPRETER" | sed -r 's#^(.*[^[:blank:]]+)([[:blank:]]*)$#\1 #g')"  
+else
+  #This might be problematic with remote machines.
+  shuffle="$(realpath "$shuffle")"
+  SHUFFLE_INTERPRETER=""
+  [ -z "$SHUFFLE_ARGS" ] && [ ${#awk_variables} -gt 0 ] && [[ $map = *.awk ]] && SHUFFLE_ARGS="${awk_variables}"
+fi
+
+if [ ! -x "$2" ]; then
+   reduce="$(<$2)"
+   if [ -z "$REDUCER_INTERPRETER" ]; then
+     #if [ -z "$awk_variables" ]; then   
+       REDUCER_INTERPRETER="awk"
+     #else
+     #  REDUCER_INTERPRETER="awk $awk_variables"
+     #fi
+     [ -z "$REDUCER_ARGS"] && [ ${#awk_variables} -gt 0 ] && REDUCER_ARGS="${awk_variables}"
+  fi  
+  REDUCER_INTERPRETER="$(echo "$REDUCER_INTERPRETER" | sed -r 's#^(.*[^[:blank:]]+)([[:blank:]]*)$#\1 #g')"
+else
+  #This might be problematic with remote machines.
+  reduce="$2"
+  reduce="$(realpath "$2")"
+  REDUCER_INTERPRETER=""
+  [ -z "$REDUCER_ARGS" ] && [ ${#awk_variables} -gt 0 ] && [[ $map = *.awk ]] && REDUCER_ARGS="${awk_variables}"
+fi
+
+set -x
+
+input=$(lcat $3 | head -n 1)
+
+#input=$3
+    set +x
+(    
+cat <<EOF
+function execute() {
+    1st_or_2nd "$MAPPER_INTERPRETER" "$map" "$MAPPER_ARGS" < $1  | \
+    sort -t '|' -k1 | \
+    1st_or_2nd "$SHUFFLE_INTERPRETER" "$shuffle" "$SHUFFLE_ARGS" | \
+    1st_or_2nd "$REDUCER_INTERPRETER" "$reduce" "$REDUCER_ARGS" | \
+    sort -t '|' -k1 
+}   
+EOF
+) >&2
+    
+    echo "Bash Reduce, ready to execute"
+    read -p "Press enter to continue"
+    set -x
+#(
+#  exec 4<"$input"
+  execute "$input" "$awk_variables" "$parallel_flags"
+#  fsync &4
+#) 
+#exec 3<&-
+#exec 4<&-
+    set +x
+    echo "Finished Executing"
+    read -p "Press enter to continue"
+    set -x
+
+
+
+
