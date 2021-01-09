@@ -141,7 +141,7 @@ input=$(lcat $3 | head -n 1)
 (    
 cat <<EOF
 function execute() {
-    1st_or_2nd "$MAPPER_INTERPRETER" "$map" "$MAPPER_ARGS" < $1  | \
+    1st_or_2nd "$MAPPER_INTERPRETER" "$map" "$MAPPER_ARGS" < "$input"  | \
     sort -t '|' -k1 | \
     1st_or_2nd "$SHUFFLE_INTERPRETER" "$shuffle" "$SHUFFLE_ARGS" | \
     1st_or_2nd "$REDUCER_INTERPRETER" "$reduce" "$REDUCER_ARGS" | \

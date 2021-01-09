@@ -2,12 +2,29 @@ set -x
 RP_FN="`which realpath`"
 RP_TARGET=$(readlink $RP_FN)
 function 1st_or_2nd(){
+	local input
+	if [[ "$1" = -* ]]; then
+	  input="$2"; shift 2
+	else
+	  input=""
+	fi
 	if [ ${#1} -gt 0 ]; then
 	  CMD="$1"; shift 1
-	  "$CMD" $2 "$1" 
+	  if [ -z "$input" ]; then
+	    "$CMD" $2 "$1"
+	  else
+	    #"$CMD" $2 "$1" <"$input"
+	    cat "$input" | "$CMD" $2 "$1"
+	  fi	
 	else
-	  CMD="$2"; shift 2
-	  "$CMD" $1 	
+	  CMD="$2"
+	  shift 2
+	  if [ -z "$input" ]; then
+	     "$CMD" $1 
+	  else
+	    #"$CMD" $1 <"$input"
+	    cat "$input" | "$CMD" $1
+	  fi	
 	fi
 }
 function realpath(){

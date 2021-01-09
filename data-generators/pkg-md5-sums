@@ -10,10 +10,10 @@ outfile=$(realpath -m "$outfile")
 CWD=$(realpath "$CWD")
 PPPR_ROOT="$(realpath "$PPPR_ROOT")"
 
-    set +x
-    echo "Finished Setting Paths"
-    read -p "Press enter to continue"
-    set -x
+#    set +x
+#    echo "Finished Setting Paths"
+#    read -p "Press enter to continue"
+ #   set -x
 
 AWK_fn_map_deb='
 /^Package:/     { sub(/^Package: /,"");  PKG=$0; }
@@ -26,21 +26,16 @@ AWK_fn_map_deb='
 '
 
 
-AWK_fn_prepend_file_list='BEGIN {FS = "|"}
-{   db_list=$3
-	#print "db_list=" db_list
-	sub(/\.[^.]+$/, "."ext, db_list)
-    print db_list "|" $1 "|" $2 "|" $3 "|" $4 "|" db_dir}
-'	
+
 
 #AWK_fn_DISTRO_PKGS_SPECS=
 
 for pfx in "1" "2" "3"; do
   [ -f "$outfile"_$pfx ] && rm "$outfile"_$pfx
   touch "$outfile"
-  [ -f "$outfile"_$pfx_md5 ] && rm "$outfile"_$pfx_md5
+  [ -f "$outfile"_$pfx_md5 ] && rm "$outfile"_${pfx}_md5
   touch "$outfile"_$pfx_md5
-  [ -f "$outfile"_"$pfx"db ] && rm "$outfile"_"$pfx"_db
+  [ -f "$outfile"_"$pfx"_db ] && rm "$outfile"_"$pfx"_db
   touch "$outfile"_"$pfx"_db
 done
 
@@ -52,19 +47,58 @@ for a_dir in "${directories[@]}"; do
   packages)
     pfx=1
     cd "$a_dir"; dir_bname=$(basename "$a_dir")
-    md5sum $(ls -1 *.files) "" | sed -r 's#^([^[:space:]]+)([[:space:]]+)([^[:space:]].*)$#\3|\1|'"$bname"'#g' | sort -t '|' -k1 >> "$outfile"_"$pfx"_md5
-    cut -f2,3,8 -d'|' --output-delimiter="|" "$a_dir"/user-installed-packages | \
-      awk -v ext=files -v db_dir=packages "$AWK_fn_prepend_file_list" | sort -t '|' -k1 >> "$outfile"_"$pfx"_db #f1=file_list_name, f2=pkg, f3=version, f4=pkg_file, f5=packages
+    md5sum $(ls -1 *.files) "" | sed -r 's#^([^[:space:]]+)([[:space:]]+)([^[:space:]].*)([.]files)$#\3||||$bname|\3\4|\1'"|"'#g' | sort -t '|' -k1 >> "$outfile"_"$pfx"_md5
+    
+#     set +x
+#    echo "Finished packages md5sums"
+#    read -p "Press enter to continue"
+#    set -x   
+    
+ #We have: filelist|, pkg, ver, pkgfile, ,pkgsdir
+#We want:
+#print pkg,                              arch, ver, pkgfile, dir_name, filelist, md5sum 
+#android-libadb_8.1.0+r23-5|         |      |            |                |android-libadb_8.1.0+r23-5.files|3d2a36e9e638b22d68014aef5ad52283packages
 
-AWK_FN_pkgs='{
-  filelist=$1; pkg=$2; ver=$3; pkgfile=$4; arch=""; info_dir_alias=$6; md5sum=$7; md5sum=""
-  print filelist "|" md5sum "|" dir_name "|" pkg "|" arch "|" ver "|" pkgfile "|" md5sum
-}'  
+
+#AWK_FN_pkgs='{
+#  filelist=$1; pkg=$2; ver=$3; pkgfile=$4; arch=""; info_dir_alias=$6; md5sum=$7; md5sum=""
+#  libboost-thread1.71.0_1.71.0.files|750b3f445d293035c92ee016955c47fa|packages
+#}'     
+
+
+
+AWK_fn_prepend_file_list='BEGIN {FS = "|"}
+{  
+	pkg=$1; arch=""; ver=$2; 
+	pkgfile=$3
+	 db_list=$3
+	 pkgfile_noExt=$3
+	sub(/\.[^.]+$/, "", pkgfile_noExt)
+	filelist=pkgfile_noExt "." ext
+	md5sum=""
+    print pkgfile_noExt "|" arch "|" ver "|" pkgfile "|" db_dir "|" filelist "|" md5sum "|" pkg}
+'	
+    cut -f2,3,8 -d'|' --output-delimiter="|" "$a_dir"/user-installed-packages | \
+      awk -v ext=files -v db_dir=$bname "$AWK_fn_prepend_file_list" | sort -t '|' -k1 >> "$outfile"_"$pfx"_db #f1=file_list_name, f2=pkg, f3=version, f4=pkg_file, f5=packages
+
+     #set +x
+    #echo "Finished packages db"
+    #read -p "Press enter to continue"
+    #set -x   
+
+
+
     #join -t "|" -j1 "$outfile"_"$pfx"_db "$outfile"_"$pfx"_md5 | sort -t '|' -k1 >> "$outfile"_$pfx
     #set +x
     "$PPPR_ROOT"/bash-reduce -v shuffle_OFS="@@@@" -v shuffle_FS="|" -v Keep_Key=true \
         "$PPPR_ROOT"/dpkg_mappers/identity.awk "$PPPR_ROOT"/dpkg_reducers/PKGS_reducer.awk \
         <(cat "${outfile}"_"$pfx"_md5 $outfile"_"$pfx"_db") > "$outfile"_${pfx}
+        
+      set +x
+    echo "Finished packages"
+    read -p "Press enter to continue"
+    set -x          
+        
     #cat "$outfile"_$pfx | awk "$AWK_FN_pkgs" > "$outfile"_${pfx}_awk
     #set +x
     #echo "Finished:
