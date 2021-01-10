@@ -91,7 +91,7 @@ else
   map=$1
   map="$(realpath "$map")"  
   unset MAPPER_INTERPRETER
-  [ -z "$MAP_ARGS"] && [ ${#awk_variables} -gt 0 ] && [[ $map = *.awk ]] && MAP_ARGS="${awk_variables}"
+  [ -z "$MAP_ARGS"] && [ ${#awk_variables} -gt 0 ] && [[ $map = *.awk ]] && MAPPER_ARGS="${awk_variables}"
 fi
 
 shuffle="$(realpath "core/shuffle.awk")"
@@ -141,16 +141,19 @@ input=$(lcat $3 | head -n 1)
 (    
 cat <<EOF
 function execute() {
-    1st_or_2nd "$MAPPER_INTERPRETER" "$map" "$MAPPER_ARGS" < "$input"  | \
+    cat "$input" | 1st_or_2nd "$MAPPER_INTERPRETER" "$map" "$MAPPER_ARGS"  | \
     sort -t '|' -k1 | \
     1st_or_2nd "$SHUFFLE_INTERPRETER" "$shuffle" "$SHUFFLE_ARGS" | \
     1st_or_2nd "$REDUCER_INTERPRETER" "$reduce" "$REDUCER_ARGS" | \
     sort -t '|' -k1 
-}   
+}
+
+
+
 EOF
 ) >&2
     
-    echo "Bash Reduce, ready to execute"
+    echo "Bash Reduce, ready to execute" >&2
     read -p "Press enter to continue"
     set -x
 #(
@@ -164,7 +167,8 @@ EOF
     echo "Finished Executing"
     read -p "Press enter to continue"
     set -x
-
+rm "$input"
+rm "nohup.out"
 
 
 

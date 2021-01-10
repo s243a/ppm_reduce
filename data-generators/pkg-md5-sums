@@ -47,7 +47,7 @@ for a_dir in "${directories[@]}"; do
   packages)
     pfx=1
     cd "$a_dir"; dir_bname=$(basename "$a_dir")
-    md5sum $(ls -1 *.files) "" | sed -r 's#^([^[:space:]]+)([[:space:]]+)([^[:space:]].*)([.]files)$#\3||||$bname|\3\4|\1'"|"'#g' | sort -t '|' -k1 >> "$outfile"_"$pfx"_md5
+    md5sum $(ls -1 *.files) "" | sed -r 's#^([^[:space:]]+)([[:space:]]+)([^[:space:]].*)([.]files)$#\3||||'$bname'|\3\4|\1'"|"'#g' | sort -t '|' -k1 >> "$outfile"_"$pfx"_md5
     
 #     set +x
 #    echo "Finished packages md5sums"

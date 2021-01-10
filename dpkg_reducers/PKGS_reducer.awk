@@ -35,7 +35,7 @@ BEGIN {
     }  else {
       OFS = "|"
     }
-  pkg=""; arch=""; ver=""; pkgfile=""; f5=dir_name=""; f6=filelist=""; md5sum=""
+  pkg=""; arch=""; ver=""; pkgfile=""; f5=dir_name=""; f6=filelist=""; md5sum=""; pkgfile_noExt=""
  
 }
 {
@@ -81,14 +81,14 @@ BEGIN {
     if ( length(md5sum) == 0 ){
       md5sum=fields[7]
     }   
-    if ( length(pkgfile_noEx) == 0 ){
-      pkgfile_noEx=fields[1]
+    if ( length(pkgfile_noExt) == 0 ){
+      pkgfile_noExt=fields[1]
     }                         
   }
     #We don't need to do the following since it is the key. 
     #if ( length(pkgfile_noEx) == 0 ){
     #  pkgfile_noExt=pkgfile
-    #  pkgfile_noEx=sub(/\.[^.]+$/, "", pkgfile_noExt)
+    #  pkgfile_noExt=sub(/\.[^.]+$/, "", pkgfile_noExt)
     #}    
     if ( length(pkg) == 0 ){
       pkg=pkgfile_noExt

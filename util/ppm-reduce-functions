@@ -11,7 +11,7 @@ function 1st_or_2nd(){
 	if [ ${#1} -gt 0 ]; then
 	  CMD="$1"; shift 1
 	  if [ -z "$input" ]; then
-	    "$CMD" $2 "$1"
+	    "$CMD" $2 "$1" <&0
 	  else
 	    #"$CMD" $2 "$1" <"$input"
 	    cat "$input" | "$CMD" $2 "$1"
@@ -20,7 +20,7 @@ function 1st_or_2nd(){
 	  CMD="$2"
 	  shift 2
 	  if [ -z "$input" ]; then
-	     "$CMD" $1 
+	     "$CMD" $1 <&0
 	  else
 	    #"$CMD" $1 <"$input"
 	    cat "$input" | "$CMD" $1
@@ -38,8 +38,8 @@ function realpath(){
         A_PATH=$(echo "$A_PATH" | sed -r 's#^\.\./#'"$P_CWD/"'#g' ) #&& A_PATH=$(dirname $A_PATH)        
         A_PATH=$(echo "$A_PATH" | sed -r 's#^\./#'"$CWD/"'#g' )
 
-        echo "Warning simulating '-m' option since xzit isn't supported by busybox" >2
-        echo "A_PATH=$A_PATH" >2
+        echo "Warning simulating '-m' option since xzit isn't supported by busybox" >&2
+        echo "A_PATH=$A_PATH" >&2
         if [ -f  "$A_PATH" ] || [ -d  "$A_PATH" ]; then
           $RP_FN "$@"
         else
@@ -68,8 +68,8 @@ export lcat
 #        A_PATH=$1
 #        A_PATH=$(echo "$A_path" | sed 's#^./#'"$CWD"'#g' )
 #        A_PATH=$(echo "$A_path" | sed 's#^../#'"$CWD"'#g' ) && A_PATH=$(dirname $A_PATH)
-#        echo "Warning simulating '-m' option since xzit isn't supported by busybox" >2
-#        echo "A_PATH=$A_PATH" >2
+#        echo "Warning simulating '-m' option since xzit isn't supported by busybox" >&2
+#        echo "A_PATH=$A_PATH" >&2
 #        if [ -f  "$A_PATH" ] || [ -d  "$A_PATH" ]; then
 #          $RP_FN "$@"
 #        else
