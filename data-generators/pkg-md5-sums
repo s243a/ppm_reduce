@@ -33,7 +33,7 @@ AWK_fn_map_deb='
 for pfx in "1" "2" "3"; do
   [ -f "$outfile"_$pfx ] && rm "$outfile"_$pfx
   touch "$outfile"
-  [ -f "$outfile"_$pfx_md5 ] && rm "$outfile"_${pfx}_md5
+  [ -f "$outfile"_${pfx}_md5 ] && rm "$outfile"_${pfx}_md5
   touch "$outfile"_$pfx_md5
   [ -f "$outfile"_"$pfx"_db ] && rm "$outfile"_"$pfx"_db
   touch "$outfile"_"$pfx"_db
@@ -90,6 +90,10 @@ AWK_fn_prepend_file_list='BEGIN {FS = "|"}
 
     #join -t "|" -j1 "$outfile"_"$pfx"_db "$outfile"_"$pfx"_md5 | sort -t '|' -k1 >> "$outfile"_$pfx
     #set +x
+    "$PPPR_ROOT"/bash-reduce -v shuffle_OFS="@@@@" -v shuffle_FS="|" -v Keep_Key=true \
+        "$PPPR_ROOT"/dpkg_mappers/identity.awk "$PPPR_ROOT"/core/identity.awk \
+        <(cat "${outfile}"_"$pfx"_md5 $outfile"_"$pfx"_db") > "$outfile"_${pfx}_map_shuffle    
+    
     "$PPPR_ROOT"/bash-reduce -v shuffle_OFS="@@@@" -v shuffle_FS="|" -v Keep_Key=true \
         "$PPPR_ROOT"/dpkg_mappers/identity.awk "$PPPR_ROOT"/dpkg_reducers/PKGS_reducer.awk \
         <(cat "${outfile}"_"$pfx"_md5 $outfile"_"$pfx"_db") > "$outfile"_${pfx}
