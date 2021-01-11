@@ -38,12 +38,14 @@ BEGIN {
   pkg=""; arch=""; ver=""; pkgfile=""; f5=dir_name=""; f6=filelist=""; md5sum=""; pkgfile_noExt=""
  
 }
-{
+{  #f1=pkgfile_noExt        |f2=arch|f3=ver        |f4=pkgfile                          |f5=dir_name|f6=filelist                            |f7=md5sum                                       |pkg
+	#adb_8.1.0+r23-5_i386|             |8.1.0+r23-5|adb_8.1.0+r23-5_i386.deb|packages       |adb_8.1.0+r23-5_i386.files|                                                           |adb
+    #adb_8.1.0+r23-5         |             |                   |                                          |packages        |adb_8.1.0+r23-5.files         |00fe8bb85ae24f00fff63bdfbd9464ea| 
   #filelist "|" md5sum "|" dir_name "|" pkg "|" arch "|" ver "|" pkgfile
   #split($0, lines , FS)
   for(i=1; i<=NF; i++){
     line=$i
-    pkg=""; arch=""; ver=""; pkgfile=""; f5=dir_name=""; f6=filelist=""; md5sum=""
+    pkgfile_noExt=""; arch="";pkg=""; ver=""; pkgfile=""; f5=dir_name=""; f6=filelist=""; md5sum=""
     #print "line=" line
     split(line, fields , OFS)
       if (length(pkgfile) == 0){
@@ -93,6 +95,6 @@ BEGIN {
     if ( length(pkg) == 0 ){
       pkg=pkgfile_noExt
     }  
-  print pkg, arch, ver, pkgfile, dir_name, filelist, md5sum 
+  print pkg, arch, ver, pkgfile, dir_name, filelist, md5sum,pkgfile_noExt 
 }
 #fonts-arphic-gbsn00lp_2.11-15_all||2.11-15|fonts-arphic-gbsn00lp_2.11-15_all.deb|packages|fonts-arphic-gbsn00lp_2.11-15_all.files||fonts-arphic-gbsn00lp

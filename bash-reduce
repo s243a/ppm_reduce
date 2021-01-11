@@ -164,7 +164,7 @@ EOF
 #exec 3<&-
 #exec 4<&-
     set +x
-    echo "Finished Executing"
+    echo "Finished Executing" >&2
     read -p "Press enter to continue"
     set -x
 rm "$input"
