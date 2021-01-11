@@ -34,18 +34,17 @@ BEGIN {
       OFS=shuffle_FS
     }  else {
       OFS = "|"
-    }
-  pkg=""; arch=""; ver=""; pkgfile=""; f5=dir_name=""; f6=filelist=""; md5sum=""; pkgfile_noExt=""
- 
+    } 
 }
-{  #f1=pkgfile_noExt        |f2=arch|f3=ver        |f4=pkgfile                          |f5=dir_name|f6=filelist                            |f7=md5sum                                       |pkg
-	#adb_8.1.0+r23-5_i386|             |8.1.0+r23-5|adb_8.1.0+r23-5_i386.deb|packages       |adb_8.1.0+r23-5_i386.files|                                                           |adb
-    #adb_8.1.0+r23-5         |             |                   |                                          |packages        |adb_8.1.0+r23-5.files         |00fe8bb85ae24f00fff63bdfbd9464ea| 
+{  #f1=pkgfile_noExt     |f2=arch        |f3=ver     |f4=pkgfile               |f5=dir_name                   |f6=filelist                     |f7=md5sum                       |pkg
+	#adb_8.1.0+r23-5_i386|               |8.1.0+r23-5|adb_8.1.0+r23-5_i386.deb |packages                      |adb_8.1.0+r23-5_i386.files      |                                |adb
+    #adb_8.1.0+r23-5     |               |           |                         |packages|adb_8.1.0+r23-5.files                                 |00fe8bb85ae24f00fff63bdfbd9464ea| 
   #filelist "|" md5sum "|" dir_name "|" pkg "|" arch "|" ver "|" pkgfile
   #split($0, lines , FS)
+  pkg=""; arch=""; ver=""; pkgfile=""; f5=dir_name=""; f6=filelist=""; md5sum=""; pkgfile_noExt=""
   for(i=1; i<=NF; i++){
     line=$i
-    pkgfile_noExt=""; arch="";pkg=""; ver=""; pkgfile=""; f5=dir_name=""; f6=filelist=""; md5sum=""
+    
     #print "line=" line
     split(line, fields , OFS)
       if (length(pkgfile) == 0){
